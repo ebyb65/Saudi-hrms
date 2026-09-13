@@ -7,6 +7,7 @@
   <style>
     :root {
       --primary: #006C35;
+      --primary-dark: #004d26;
       --danger: #d32f2f;
       --warning: #ed6c02;
       --bg: #f8fafc;
@@ -20,32 +21,49 @@
       margin: 0;
       padding: 16px;
     }
-    .container { max-width: 900px; margin: 0 auto; }
+    .container { max-width: 950px; margin: 0 auto; }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn {
       background-color: var(--primary);
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 9px 14px;
       border-radius: 6px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
+      font-size: 13px;
     }
+    .btn-secondary { background-color: #475569; }
+    .btn-outline { background-color: transparent; border: 1px solid var(--primary); color: var(--primary); }
     .card {
       background: var(--card);
-      padding: 20px;
+      padding: 18px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+    }
+    .actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: #e2e8f0;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
     }
     .form-group { margin-bottom: 12px; }
-    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
-    input, select {
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
+    input {
       width: 100%;
       padding: 8px;
       border: 1px solid #cbd5e1;
@@ -63,6 +81,7 @@
       font-size: 11px;
       font-weight: bold;
       color: white;
+      display: inline-block;
     }
     .badge-danger { background-color: var(--danger); }
     .badge-warning { background-color: var(--warning); }
@@ -73,37 +92,56 @@
 
 <div class="container">
   <div class="header">
-    <h2 id="appTitle">نظام الموارد البشرية (Saudi HRMS)</h2>
-    <button class="btn" onclick="toggleLanguage()">Switch to English</button>
+    <h2 id="appTitle" style="margin: 0;">نظام الموارد البشرية (Saudi HRMS)</h2>
+    <button class="btn btn-outline" onclick="toggleLanguage()">English / العربية</button>
   </div>
 
-  <!-- ജീവനക്കാരെ ചേർക്കാനുള്ള ഫോം -->
+  <!-- ആക്ഷൻ ബാർ: ഡെമോ ഡാറ്റ & എക്സൽ ഇമ്പോർട്ട് -->
   <div class="card">
-    <h3 id="formTitle">إضافة موظف جديد (Add Employee)</h3>
-    <form id="employeeForm" onsubmit="addEmployee(event)">
-      <div class="form-group">
-        <label id="lblEmpName">اسم الموظف / Employee Name</label>
-        <input type="text" id="empName" required placeholder="Ahmed Ali">
+    <div class="actions-bar">
+      <div>
+        <strong id="lblBulkTitle">إدارة البيانات مجمعة (Bulk Operations):</strong>
       </div>
-      <div class="form-group">
-        <label id="lblIqama">رقم الإقامة / الحدود (Iqama / Border No.)</label>
-        <input type="number" id="iqamaNo" required placeholder="2xxxxxxxxx">
+      <div class="btn-group">
+        <button class="btn" onclick="loadSampleData()" id="btnSample">تحميل بيانات تجريبية (Load Demo Data)</button>
+        <label class="btn btn-secondary" style="cursor:pointer;">
+          <span id="btnUpload">استيراد من ملف (Import CSV)</span>
+          <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSV(event)">
+        </label>
+        <button class="btn btn-outline" onclick="clearData()" style="color:#d32f2f; border-color:#d32f2f;" id="btnClear">مسح (Clear All)</button>
       </div>
-      <div class="form-group">
-        <label id="lblRole">المسمى الوظيفي / Job Title</label>
-        <input type="text" id="jobTitle" required placeholder="Driver / Engineer">
-      </div>
-      <div class="form-group">
-        <label id="lblExpiry">تاريخ انتهاء الإقامة / Iqama Expiry Date</label>
-        <input type="date" id="expiryDate" required>
-      </div>
-      <button type="submit" class="btn" id="btnAdd">حفظ البيانات (Save Employee)</button>
-    </form>
+    </div>
+
+    <!-- പുതിയ ആളെ ചേർക്കാനുള്ള ഫോം (Collapsible or Standard) -->
+    <details>
+      <summary style="cursor: pointer; font-weight: bold; color: var(--primary); padding: 5px 0;" id="sumAdd">
+        ➕ إضافة موظف فردي (Add Single Employee Manually)
+      </summary>
+      <form id="employeeForm" onsubmit="addEmployee(event)" style="margin-top: 15px;">
+        <div class="form-group">
+          <label id="lblEmpName">اسم الموظف / Employee Name</label>
+          <input type="text" id="empName" required placeholder="Ahmed Ali">
+        </div>
+        <div class="form-group">
+          <label id="lblIqama">رقم الإقامة / الحدود (Iqama / Border No.)</label>
+          <input type="number" id="iqamaNo" required placeholder="2xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label id="lblRole">المسمى الوظيفي / Job Title</label>
+          <input type="text" id="jobTitle" required placeholder="Site Engineer">
+        </div>
+        <div class="form-group">
+          <label id="lblExpiry">تاريخ انتهاء الإقامة / Iqama Expiry Date</label>
+          <input type="date" id="expiryDate" required>
+        </div>
+        <button type="submit" class="btn" id="btnAdd">حفظ الموظف (Save)</button>
+      </form>
+    </details>
   </div>
 
-  <!-- ജീവനക്കാരുടെ ലിസ്റ്റും അലേർട്ടുകളും -->
+  <!-- ജീവനക്കാരുടെ പട്ടികയും തീയതി അലേർട്ടുകളും -->
   <div class="card">
-    <h3 id="listTitle">سجل الموظفين وتنبيهات الإقامة (Employee Expiry Tracker)</h3>
+    <h3 id="listTitle" style="margin-top: 0;">سجل الموظفين وتنبيهات الإقامة (Employee Expiry Tracker)</h3>
     <div class="table-container">
       <table>
         <thead>
@@ -116,7 +154,7 @@
           </tr>
         </thead>
         <tbody id="employeeTableBody">
-          <!-- ഡാറ്റ ഇവിടെ ഡൈനാമിക്കായി വരും -->
+          <!-- ഡാറ്റ ഇവിടെ വരും -->
         </tbody>
       </table>
     </div>
@@ -127,6 +165,21 @@
   let isArabic = true;
   let employees = JSON.parse(localStorage.getItem('saudi_hrms_employees')) || [];
 
+  // സാമ്പിൾ ഡെമോ ഡാറ്റ (സൗദി ഇഖാമ എക്സ്പയറി സിനാരിയോകൾ)
+  const defaultSampleData = [
+    { name: "Mohammed Al-Otaibi", iqama: "1087452391", role: "HR Manager", expiry: "2027-02-15" },
+    { name: "Abdul Rahman", iqama: "2458963214", role: "Safety Officer", expiry: "2026-09-20" }, // അർജന്റ് അലേർട്ട്
+    { name: "Suresh Kumar", iqama: "2398547120", role: "Civil Supervisor", expiry: "2026-08-30" }, // എക്സ്പയർ ആയത്
+    { name: "Tariq Mansoor", iqama: "2410258741", role: "Heavy Driver", expiry: "2026-10-05" },   // ഉടൻ തീരുന്നത്
+    { name: "John Mathew", iqama: "2498712365", role: "Operations Lead", expiry: "2026-12-10" }
+  ];
+
+  // ആദ്യ തവണ ആരും ഇല്ലെങ്കിൽ ഡെമോ ഡാറ്റ കാണിക്കാൻ
+  if (employees.length === 0) {
+    employees = defaultSampleData;
+    localStorage.setItem('saudi_hrms_employees', JSON.stringify(employees));
+  }
+
   function toggleLanguage() {
     isArabic = !isArabic;
     const root = document.getElementById('hrmsRoot');
@@ -134,10 +187,12 @@
     root.setAttribute('lang', isArabic ? 'ar' : 'en');
 
     document.getElementById('appTitle').innerText = isArabic ? "نظام الموارد البشرية (Saudi HRMS)" : "Saudi HRMS Portal";
-    document.querySelector('.header .btn').innerText = isArabic ? "Switch to English" : "التحويل للعربية";
-    document.getElementById('formTitle').innerText = isArabic ? "إضافة موظف جديد" : "Add New Employee";
-    document.getElementById('btnAdd').innerText = isArabic ? "حفظ البيانات" : "Save Employee";
-    document.getElementById('listTitle').innerText = isArabic ? "سجل الموظفين وتنبيهات الإقامة" : "Workforce & Iqama Status";
+    document.getElementById('lblBulkTitle').innerText = isArabic ? "إدارة البيانات مجمعة:" : "Bulk Operations:";
+    document.getElementById('btnSample').innerText = isArabic ? "تحميل بيانات تجريبية" : "Load Demo Data";
+    document.getElementById('btnUpload').innerText = isArabic ? "استيراد من ملف (CSV)" : "Import CSV File";
+    document.getElementById('btnClear').innerText = isArabic ? "مسح البيانات" : "Clear All";
+    document.getElementById('sumAdd').innerText = isArabic ? "➕ إضافة موظف فردي" : "➕ Add Single Employee Manually";
+    document.getElementById('listTitle').innerText = isArabic ? "سجل الموظفين وتنبيهات الإقامة" : "Workforce & Iqama Expiry Status";
 
     document.getElementById('thName').innerText = isArabic ? "الاسم" : "Name";
     document.getElementById('thIqama').innerText = isArabic ? "الإقامة" : "Iqama No";
@@ -155,10 +210,57 @@
     const role = document.getElementById('jobTitle').value;
     const expiry = document.getElementById('expiryDate').value;
 
-    employees.push({ name, iqama, role, expiry });
-    localStorage.setItem('saudi_hrms_employees', JSON.stringify(employees));
+    employees.unshift({ name, iqama, role, expiry });
+    saveAndRender();
     document.getElementById('employeeForm').reset();
+  }
+
+  function loadSampleData() {
+    employees = [...defaultSampleData];
+    saveAndRender();
+  }
+
+  function clearData() {
+    if (confirm(isArabic ? "هل أنت متأكد من مسح جميع السجلات؟" : "Are you sure you want to delete all records?")) {
+      employees = [];
+      saveAndRender();
+    }
+  }
+
+  function saveAndRender() {
+    localStorage.setItem('saudi_hrms_employees', JSON.stringify(employees));
     renderEmployees();
+  }
+
+  // CSV ഫയൽ അപ്‌ലോഡ് ചെയ്ത് ഡാറ്റ റീഡ് ചെയ്യുന്ന ഫംഗ്ഷൻ
+  function handleCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split('\n');
+      
+      // സിഎസ്വി ഫോർമാറ്റ്: Name,Iqama,Role,ExpiryDate (YYYY-MM-DD)
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line) {
+          const [name, iqama, role, expiry] = line.split(',');
+          if (name && iqama && expiry) {
+            employees.unshift({
+              name: name.trim(),
+              iqama: iqama.trim(),
+              role: role ? role.trim() : 'Staff',
+              expiry: expiry.trim()
+            });
+          }
+        }
+      }
+      saveAndRender();
+      alert(isArabic ? "تم استيراد البيانات بنجاح!" : "Data imported successfully!");
+    };
+    reader.readAsText(file);
   }
 
   function renderEmployees() {
@@ -177,7 +279,7 @@
 
       if (diffDays <= 30 && diffDays > 0) {
         badgeClass = "badge-warning";
-        statusText = isArabic ? `تجديد عاجل (${diffDays} يوم)` : `Action Required (${diffDays}d)`;
+        statusText = isArabic ? `تجديد عاجل (${diffDays} يوم)` : `Action Req (${diffDays}d)`;
       } else if (diffDays <= 0) {
         badgeClass = "badge-danger";
         statusText = isArabic ? "منتهية الصلاحية!" : "Expired!";
@@ -195,7 +297,6 @@
     });
   }
 
-  // ആദ്യ ലോഡിൽ എക്സിക്യൂട്ട് ചെയ്യാൻ
   renderEmployees();
 </script>
 
