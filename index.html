@@ -1,38 +1,203 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="mainHtml">
+<html lang="ar" dir="rtl" id="hrmsRoot">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Saudi HRMS Portal</title>
+  <title>Saudi HRMS Dashboard</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .btn { background: #006C35; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+    :root {
+      --primary: #006C35;
+      --danger: #d32f2f;
+      --warning: #ed6c02;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: start; }
+    th { background: #f1f5f9; }
+    .badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      color: white;
+    }
+    .badge-danger { background-color: var(--danger); }
+    .badge-warning { background-color: var(--warning); }
+    .badge-ok { background-color: var(--primary); }
   </style>
 </head>
 <body>
-  <div class="card">
-    <button class="btn" onclick="toggleLang()">Switch Language (English / العربية)</button>
-    <h1 id="title">نظام الموارد البشرية (Saudi HRMS)</h1>
-    <p id="desc">لوحة تحكم إدارة الموظفين ومكافأة نهاية الخدمة والرواتب</p>
+
+<div class="container">
+  <div class="header">
+    <h2 id="appTitle">نظام الموارد البشرية (Saudi HRMS)</h2>
+    <button class="btn" onclick="toggleLanguage()">Switch to English</button>
   </div>
 
-  <script>
-    function toggleLang() {
-      const html = document.getElementById('mainHtml');
-      const isArabic = html.getAttribute('dir') === 'rtl';
-      if (isArabic) {
-        html.setAttribute('dir', 'ltr');
-        html.setAttribute('lang', 'en');
-        document.getElementById('title').innerText = "Saudi HRMS System";
-        document.getElementById('desc').innerText = "Employee Management, ESB & WPS Payroll Portal";
-      } else {
-        html.setAttribute('dir', 'rtl');
-        html.setAttribute('lang', 'ar');
-        document.getElementById('title').innerText = "نظام الموارد البشرية (Saudi HRMS)";
-        document.getElementById('desc').innerText = "لوحة تحكم إدارة الموظفين ومكافأة نهاية الخدمة والرواتب";
+  <!-- ജീവനക്കാരെ ചേർക്കാനുള്ള ഫോം -->
+  <div class="card">
+    <h3 id="formTitle">إضافة موظف جديد (Add Employee)</h3>
+    <form id="employeeForm" onsubmit="addEmployee(event)">
+      <div class="form-group">
+        <label id="lblEmpName">اسم الموظف / Employee Name</label>
+        <input type="text" id="empName" required placeholder="Ahmed Ali">
+      </div>
+      <div class="form-group">
+        <label id="lblIqama">رقم الإقامة / الحدود (Iqama / Border No.)</label>
+        <input type="number" id="iqamaNo" required placeholder="2xxxxxxxxx">
+      </div>
+      <div class="form-group">
+        <label id="lblRole">المسمى الوظيفي / Job Title</label>
+        <input type="text" id="jobTitle" required placeholder="Driver / Engineer">
+      </div>
+      <div class="form-group">
+        <label id="lblExpiry">تاريخ انتهاء الإقامة / Iqama Expiry Date</label>
+        <input type="date" id="expiryDate" required>
+      </div>
+      <button type="submit" class="btn" id="btnAdd">حفظ البيانات (Save Employee)</button>
+    </form>
+  </div>
+
+  <!-- ജീവനക്കാരുടെ ലിസ്റ്റും അലേർട്ടുകളും -->
+  <div class="card">
+    <h3 id="listTitle">سجل الموظفين وتنبيهات الإقامة (Employee Expiry Tracker)</h3>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th id="thName">الاسم</th>
+            <th id="thIqama">الإقامة</th>
+            <th id="thRole">المهنة</th>
+            <th id="thExpiry">تاريخ الانتهاء</th>
+            <th id="thStatus">الحالة والتنبيه</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTableBody">
+          <!-- ഡാറ്റ ഇവിടെ ഡൈനാമിക്കായി വരും -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  let isArabic = true;
+  let employees = JSON.parse(localStorage.getItem('saudi_hrms_employees')) || [];
+
+  function toggleLanguage() {
+    isArabic = !isArabic;
+    const root = document.getElementById('hrmsRoot');
+    root.setAttribute('dir', isArabic ? 'rtl' : 'ltr');
+    root.setAttribute('lang', isArabic ? 'ar' : 'en');
+
+    document.getElementById('appTitle').innerText = isArabic ? "نظام الموارد البشرية (Saudi HRMS)" : "Saudi HRMS Portal";
+    document.querySelector('.header .btn').innerText = isArabic ? "Switch to English" : "التحويل للعربية";
+    document.getElementById('formTitle').innerText = isArabic ? "إضافة موظف جديد" : "Add New Employee";
+    document.getElementById('btnAdd').innerText = isArabic ? "حفظ البيانات" : "Save Employee";
+    document.getElementById('listTitle').innerText = isArabic ? "سجل الموظفين وتنبيهات الإقامة" : "Workforce & Iqama Status";
+
+    document.getElementById('thName').innerText = isArabic ? "الاسم" : "Name";
+    document.getElementById('thIqama').innerText = isArabic ? "الإقامة" : "Iqama No";
+    document.getElementById('thRole').innerText = isArabic ? "المهنة" : "Designation";
+    document.getElementById('thExpiry').innerText = isArabic ? "تاريخ الانتهاء" : "Expiry Date";
+    document.getElementById('thStatus').innerText = isArabic ? "الحالة والتنبيه" : "Status Alert";
+
+    renderEmployees();
+  }
+
+  function addEmployee(e) {
+    e.preventDefault();
+    const name = document.getElementById('empName').value;
+    const iqama = document.getElementById('iqamaNo').value;
+    const role = document.getElementById('jobTitle').value;
+    const expiry = document.getElementById('expiryDate').value;
+
+    employees.push({ name, iqama, role, expiry });
+    localStorage.setItem('saudi_hrms_employees', JSON.stringify(employees));
+    document.getElementById('employeeForm').reset();
+    renderEmployees();
+  }
+
+  function renderEmployees() {
+    const tbody = document.getElementById('employeeTableBody');
+    tbody.innerHTML = '';
+
+    const today = new Date();
+
+    employees.forEach(emp => {
+      const expDate = new Date(emp.expiry);
+      const diffTime = expDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      let badgeClass = "badge-ok";
+      let statusText = isArabic ? `متبقي ${diffDays} يوم` : `${diffDays} Days Left`;
+
+      if (diffDays <= 30 && diffDays > 0) {
+        badgeClass = "badge-warning";
+        statusText = isArabic ? `تجديد عاجل (${diffDays} يوم)` : `Action Required (${diffDays}d)`;
+      } else if (diffDays <= 0) {
+        badgeClass = "badge-danger";
+        statusText = isArabic ? "منتهية الصلاحية!" : "Expired!";
       }
-    }
-  </script>
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${emp.name}</strong></td>
+        <td>${emp.iqama}</td>
+        <td>${emp.role}</td>
+        <td>${emp.expiry}</td>
+        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ആദ്യ ലോഡിൽ എക്സിക്യൂട്ട് ചെയ്യാൻ
+  renderEmployees();
+</script>
+
 </body>
 </html>
