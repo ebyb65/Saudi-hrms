@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="mainHtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saudi HRMS Portal</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn { background: #006C35; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <button class="btn" onclick="toggleLang()">Switch Language (English / العربية)</button>
+    <h1 id="title">نظام الموارد البشرية (Saudi HRMS)</h1>
+    <p id="desc">لوحة تحكم إدارة الموظفين ومكافأة نهاية الخدمة والرواتب</p>
+  </div>
+
+  <script>
+    function toggleLang() {
+      const html = document.getElementById('mainHtml');
+      const isArabic = html.getAttribute('dir') === 'rtl';
+      if (isArabic) {
+        html.setAttribute('dir', 'ltr');
+        html.setAttribute('lang', 'en');
+        document.getElementById('title').innerText = "Saudi HRMS System";
+        document.getElementById('desc').innerText = "Employee Management, ESB & WPS Payroll Portal";
+      } else {
+        html.setAttribute('dir', 'rtl');
+        html.setAttribute('lang', 'ar');
+        document.getElementById('title').innerText = "نظام الموارد البشرية (Saudi HRMS)";
+        document.getElementById('desc').innerText = "لوحة تحكم إدارة الموظفين ومكافأة نهاية الخدمة والرواتب";
+      }
+    }
+  </script>
+</body>
+</html>
